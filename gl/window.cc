@@ -77,6 +77,9 @@ void Window::mouseButton(int button, int action, int mods) {
             v.drag = false;
         }
     }
+    if (action == GLFW_RELEASE) {
+        parent_->sendDirectSSTP("EXECUTE", "RaiseBalloon", {});
+    }
 }
 
 void Window::cursorPosition(double x, double y) {
@@ -95,19 +98,22 @@ void Window::cursorPosition(double x, double y) {
     }
 }
 
+void Window::key(int key, int scancode, int action, int mods) {
+    // TODO stub
+}
+
 void Window::resetBalloonPosition() {
     auto p = getPosition();
-    //auto offset = getBalloonOffset
+    auto offset = getBalloonOffset();
     int x, y;
     // 右
     if (direction_) {
         Position size = getSize();
-        // x = p.x + size.x - offset.x
-        x = p.x + size.x;
+        x = p.x + size.x - offset.x;
+        //x = p.x + size.x;
     }
     // 左
     else {
-        // x = p.x - w + offset.x
         auto res = parent_->sendDirectSSTP("EXECUTE", "GetBalloonSize", {to_s(side_)});
         std::string content = res.getContent();
         int w = 0, h = 0;
@@ -118,7 +124,8 @@ void Window::resetBalloonPosition() {
             iss >> delim;
             iss >> h;
         }
-        x = p.x - w;
+        x = p.x - w + offset.x;
+        //x = p.x - w;
     }
     // y = p.y + offset.y
     y = p.y;

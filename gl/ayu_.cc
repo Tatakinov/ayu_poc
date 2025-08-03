@@ -81,6 +81,22 @@ bool Ayu::init() {
             else if (event == "ResetBalloonPosition") {
                 resetBalloonPosition();
             }
+            else if (event == "SetBalloonOffset") {
+                int side, x = 0, y = 0;
+                to_x(req(0).value(), side);
+                to_x(req(1).value(), x);
+                to_x(req(2).value(), y);
+                setBalloonOffset(side, x, y);
+            }
+            else if (event == "GetBalloonOffset") {
+                int side;
+                std::istringstream iss(req(0).value());
+                iss >> side;
+                res = {200, "OK"};
+                auto offset = getBalloonOffset(side);
+                res(0) = static_cast<int>(offset.x);
+                res(1) = static_cast<int>(offset.y);
+            }
             else {
                 std::vector<std::string> args;
                 args.push_back(event);
@@ -223,6 +239,24 @@ void Ayu::resetBalloonPosition() {
     for (auto &[k, v] : windows_) {
         v->resetBalloonPosition();
     }
+}
+
+void Ayu::setBalloonOffset(int side, int x, int y) {
+    if (!windows_.contains(side)) {
+        if (!create(side)) {
+            return;
+        }
+    }
+    windows_[side]->setBalloonOffset(x, y);
+}
+
+Position Ayu::getBalloonOffset(int side) {
+    if (!windows_.contains(side)) {
+        if (!create(side)) {
+            return {0, 0};
+        }
+    }
+    return windows_[side]->getBalloonOffset();
 }
 
 void Ayu::enqueueDirectSSTP(std::vector<Request> list) {

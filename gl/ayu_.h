@@ -49,6 +49,9 @@ class Ayu {
 
         void resetBalloonPosition();
 
+        void setBalloonOffset(int side, int x, int y);
+        Position getBalloonOffset(int side);
+
         void show(int side);
 
         void hide(int side);

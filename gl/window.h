@@ -79,6 +79,7 @@ class Window {
         Position cursor_position_;
         std::unique_ptr<Shape> shape_;
         bool direction_;
+        Position balloon_offset_;
         Ayu *parent_;
         int side_;
 
@@ -132,8 +133,18 @@ class Window {
 
         void cursorPosition(double x, double y);
 
+        static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+            auto instance = static_cast<Window *>(glfwGetWindowUserPointer(window));
+            if (instance == NULL) {
+                return;
+            }
+            instance->key(key, scancode, action, mods);
+        }
+
+        void key(int key, int scancode, int action, int mods);
+
     public:
-        Window(Ayu *parent, int side) : window_(nullptr), scale_(100), dragged_(false), direction_(false), parent_(parent), side_(side) {}
+        Window(Ayu *parent, int side) : window_(nullptr), scale_(100), dragged_(false), direction_(false), balloon_offset_({0, 0}), parent_(parent), side_(side) {}
         virtual ~Window() {
             if (window_ != nullptr) {
                 glfwDestroyWindow(window_);
@@ -169,6 +180,7 @@ class Window {
             glfwSetWindowFocusCallback(window_, focusCallback);
             glfwSetMouseButtonCallback(window_, mouseButtonCallback);
             glfwSetCursorPosCallback(window_, cursorPositionCallback);
+            glfwSetKeyCallback(window_, keyCallback);
 
             resizeCallback(window_, width, height);
 
@@ -223,6 +235,14 @@ class Window {
             std::unique_lock<std::mutex> lock(mutex_);
             Position p = {size_[0], size_[1]};
             return p;
+        }
+
+        void setBalloonOffset(int x, int y) {
+            balloon_offset_ = {x, y};
+        }
+
+        Position getBalloonOffset() const {
+            return balloon_offset_;
         }
 
         void resetBalloonPosition();
